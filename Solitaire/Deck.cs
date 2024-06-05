@@ -105,33 +105,33 @@ namespace Solitaire
                     break;
                 }
             }
+            //I need move all this code inside the others foreachs up this
             if (addInNext)
             {
-                //Insert the "fromCard" into the "to" column
+                bool changedVisibility = false;
                 foreach (var cds in inTheTable)
                 {
+                    //If the "from" card is moved and the before card in that column now is visible, stop the foreach and continue
+                    if (!addInNext && changedVisibility)
+                    {
+                        break;
+                    }
+                    //Make visible the new card on the "from" column
+                    if (makeVisibleCard != 0 && inTheTable.IndexOf(cds) == makeVisibleCard - 1 && !changedVisibility)
+                    {
+                        Card crd = cds[from];
+                        crd.IsVisible = true;
+                        cds.RemoveAt(from);
+                        cds.Insert(from, crd);
+                        changedVisibility = true;
+                    }
+                    //Insert the "fromCard" into the "to" column
                     Card toCard = cds[to];
-                    if (toCard.Value.Equals(" "))
+                    if (toCard.Value.Equals(" ") && addInNext)
                     {
                         cds.RemoveAt(to);
                         cds.Insert(to, fromCard);
                         addInNext = false;
-                        break;
-                    }
-                }
-                //Make visible the new card on the "from" column
-                if (makeVisibleCard != 0)
-                {
-                    foreach (var cds in inTheTable)
-                    {
-                        if (inTheTable.IndexOf(cds) == makeVisibleCard - 1)
-                        {
-                            Card crd = cds[from];
-                            crd.IsVisible = true;
-                            cds.RemoveAt(from);
-                            cds.Insert(from, crd);
-                            break;
-                        }
                     }
                 }
                 //Create a new row if not exist and insert the card
@@ -150,7 +150,6 @@ namespace Solitaire
                     addInNext = false;
                 }
             }
-            //Make before card in the from index visible
         }
     }
 }
