@@ -68,7 +68,7 @@ namespace Solitaire
 
         public void Move(int from, int to)
         {
-            bool addInNext = false;
+            bool addedCard = false;
             Card fromCard = null;
             int makeVisibleCard = -1;
             foreach (var cds in inTheTable)
@@ -95,7 +95,7 @@ namespace Solitaire
                         //Validate the movement, remove the "fromCard" and make it possible
                         if (toCard != null && toCard.Color != ColorType.None && fromCard.Color != ColorType.None && (toCard.Color != fromCard.Color) && (values.IndexOf(fromCard.Value) == (values.IndexOf(toCard.Value) - 1)))
                         {
-                            addInNext = true;
+                            addedCard = true;
                             int clsindex = cds.IndexOf(fromCard);
                             cds.Remove(fromCard);
                             cds.Insert(clsindex, new(" ", " ", true));
@@ -106,13 +106,13 @@ namespace Solitaire
                 }
             }
             //I need move all this code inside the others foreachs up this
-            if (addInNext)
+            if (addedCard)
             {
                 bool changedVisibility = false;
                 foreach (var cds in inTheTable)
                 {
                     //If the "from" card is moved and the before card in that column now is visible, stop the foreach and continue
-                    if (!addInNext && changedVisibility)
+                    if (!addedCard && changedVisibility)
                     {
                         break;
                     }
@@ -127,15 +127,15 @@ namespace Solitaire
                     }
                     //Insert the "fromCard" into the "to" column
                     Card toCard = cds[to];
-                    if (toCard.Value.Equals(" ") && addInNext)
+                    if (toCard.Value.Equals(" ") && addedCard)
                     {
                         cds.RemoveAt(to);
                         cds.Insert(to, fromCard);
-                        addInNext = false;
+                        addedCard = false;
                     }
                 }
                 //Create a new row if not exist and insert the card
-                if (addInNext)
+                if (addedCard)
                 {
                     List<Card> cdsList = new();
                     for (int i = 0; i < 6; i++)
@@ -147,7 +147,7 @@ namespace Solitaire
                         }
                     }
                     inTheTable.Add(cdsList);
-                    addInNext = false;
+                    addedCard = false;
                 }
             }
         }
