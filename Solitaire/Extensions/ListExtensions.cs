@@ -11,7 +11,6 @@
                 n--;
                 int k = rng.Next(n + 1);
                 Card value = cards[k];
-                value.IsVisible = false;
                 cards[k] = cards[n];
                 cards[n] = value;
             }

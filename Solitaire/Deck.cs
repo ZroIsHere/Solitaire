@@ -1,27 +1,38 @@
-﻿using Solitaire.Enums;
-using Solitaire.Extensions;
+﻿using Solitaire.Extensions;
+using Solitaire.Helpers;
 
 namespace Solitaire
 {
     public class Deck
     {
-        List<string> values = new() { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" };
-        string[] suits = { "C", "P", "T", "R" };
-
         List<Card> cards = new();
-        List<List<Card>> inTheTable = new(); // Fila columna
+        List<List<Card>> inTheTable = new();
+        int actualTakeCard = -1;
 
         public Deck()
         {
-            foreach (var suit in suits)
+            foreach (var suit in CardsHelper.CardSuits)
             {
-                foreach (var value in values)
+                foreach (var value in CardsHelper.CardValues)
                 {
                     cards.Add(new Card(value, suit));
                 }
             }
             cards = cards.Shuffle();
             MakeTable();
+            MakeTakeCardsVisible();
+        }
+
+        private void MakeTakeCardsVisible()
+        {
+            //Make all the cards that can take visible
+            List<Card> cds = new();
+            foreach (var card in cards)
+            {
+                card.IsVisible = true;
+                cds.Add(card);
+            }
+            cards = cds;
         }
 
         private void MakeTable()
@@ -29,16 +40,19 @@ namespace Solitaire
             for (int i = 0; i < 7; i++)
             {
                 List<Card> crs = new();
+                //Create empty slot if dont have card on it
                 for (int j = 0; j < i; j++)
                 {
                     crs.Add(new Card(" ", " ", true));
                 }
 
+                //Create the column and make the first of all the array visible
                 bool firstIsVisible = false;
                 for (int j = 0; j < (7 - i); j++)
                 {
                     Card crd = cards.First();
                     cards.Remove(crd);
+                    crd.IsVisible = false;
                     if (!firstIsVisible)
                     {
                         firstIsVisible = true;
@@ -52,6 +66,11 @@ namespace Solitaire
 
         public void PrintDeck()
         {
+            //Print the solitaire matrix
+            if (actualTakeCard != -1)
+            {
+                Console.WriteLine($"Actual card for take: {cards[actualTakeCard]}");
+            }
             Console.WriteLine("C1\tC2\tC3\tC4\tC5\tC6\tC7");
             int i = 0;
             foreach (var crs in inTheTable)
@@ -66,11 +85,28 @@ namespace Solitaire
             }
         }
 
+        public void Take(int to = -1)
+        {
+            //Move the card to the column "to"
+            if (to != -1)
+            {
+                return;
+            }
+            actualTakeCard++;
+            if (actualTakeCard + 1 > cards.Count)
+            {
+                actualTakeCard = 0;
+                cards = cards.Shuffle();
+            }
+            //Just make visible a new card
+        }
+
         public void Move(int from, int to)
         {
             bool addCard = false;
             Card fromCard = null;
             int makeVisibleCard = -1;
+            //Rows foreach for take the fromCard
             foreach (var cds in inTheTable)
             {
                 if (!cds[from].Value.Equals(" ") && cds[from].IsVisible)
@@ -80,6 +116,7 @@ namespace Solitaire
                 }
                 if (fromCard != null)
                 {
+                    //Rows foreach for take the toCard
                     foreach (var cds2 in inTheTable)
                     {
                         Card toCard = null;
@@ -87,13 +124,8 @@ namespace Solitaire
                         {
                             toCard = cds2[to];
                         }
-                        int indexfrom = values.IndexOf(fromCard.Value);
-                        if (toCard != null)
-                        {
-                            int indexto = values.IndexOf(toCard.Value) - 1;
-                        }
                         //Validate the movement, remove the "fromCard" and make it possible
-                        if (toCard != null && toCard.Color != ColorType.None && fromCard.Color != ColorType.None && (toCard.Color != fromCard.Color) && (values.IndexOf(fromCard.Value) == (values.IndexOf(toCard.Value) - 1)))
+                        if (toCard != null && CardsHelper.CanMoveCard(fromCard, toCard))
                         {
                             addCard = true;
                             int clsindex = cds.IndexOf(fromCard);
